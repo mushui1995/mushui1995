@@ -3,7 +3,7 @@ from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import *
 from PySide6.QtUiTools import QUiLoader
 from NMEA_Socket import Nmea_Tcp
-from gnss_tool.UI.ui_main import Ui_MainWindow
+from gnss_tool.UI.ui_mian import Ui_MainWindow
 import os
 
 

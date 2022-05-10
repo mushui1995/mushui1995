@@ -1,74 +1,64 @@
-﻿#!/usr/bin/env python3
-import sys
+﻿import numpy as np
+from PySide6.QtWidgets import *
+from PySide6.QtCore import QTimer
 
-from PySide6.QtCore import QFile, QObject, Signal, Slot, QTimer
-from PySide6.QtWidgets import QApplication, QVBoxLayout, QWidget
-from PySide6.QtUiTools import QUiLoader
-
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, \
+    NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-
-import random
-
-
-class Gnss_Draw(QObject):
-    dataChanged = Signal(list)
-
-    def __init__(self, parent=None):
-        # LOAD HMI
-        super().__init__(parent)
-        designer_file = QFile("userInterface.ui")
-        if designer_file.open(QFile.ReadOnly):
-            loader = QUiLoader()
-            self.ui = loader.load(designer_file)
-            designer_file.close()
-            self.ui.show()
-        # Data to be visualized
-        self.data = []
-
-    def mainLoop(self):
-        self.data = []
-        for i in range(10):
-            self.data.append(random.randint(0, 10))
-        # Send data to graph
-        self.dataChanged.emit(self.data)
-        # LOOP repeater
-        QTimer.singleShot(10, self.mainLoop)
+import matplotlib.pyplot as plt
+import sys
+from gnss_tool.UI.ui_mian import Ui_MainWindow
 
 
-class MatplotlibWidget(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
+class Mytest(QMainWindow, Ui_MainWindow):
+    def __init__(self):
+        super(Mytest, self).__init__()
+        self.setupUi(self)
+        self.init()
+        self.setWindowTitle("matlplotlib学习")
 
-        fig = Figure(figsize=(7, 5), dpi=65, facecolor=(1, 1, 1), edgecolor=(0, 0, 0))
-        self.canvas = FigureCanvas(fig)
-        self.toolbar = NavigationToolbar(self.canvas, self)
-        lay = QVBoxLayout(self)
-        lay.addWidget(self.toolbar)
-        lay.addWidget(self.canvas)
+    def init(self):
+        # self.figure = plt.figure()
+        self.sat_view()
 
-        self.ax = fig.add_subplot(111)
-        self.line, *_ = self.ax.plot([])
+    def Figure_Canvas(self, view):
+        self.static_canvas = FigureCanvas(Figure(figsize=(3, 3)))
+        self.layout = QGridLayout(view)
+        self.layout.addWidget(self.static_canvas, 1, 1)
 
-    @Slot(list)
-    def update_plot(self, data):
-        self.line.set_data(range(len(data)), data)
+    def sat_view(self):
+        self.Figure_Canvas(self.satellite_view)
+        ax = self.static_canvas.figure.add_subplot(111, projection='polar')  # projection='polar'-->设为极坐标
+        ax.set_theta_direction(-1)  # 设置极坐标⽅向：1->顺时针；-1->逆时针
+        ax.set_theta_zero_location('N')  # 设置极⾓初始值位置（默认是东-->右侧）
+        ax.yaxis.set_label_position('right')
+        ax.tick_params('y', labelleft=False)  # 不显⽰极径刻度值
+        ax.grid(linestyle='--')  # 设置线型
+        labels = ['N', '45°', 'E', '135°', 'S', '225°', 'W', '315°']
+        ax.set_thetagrids(range(0, 360, 45), labels, fontweight='semibold')  # 设置极⾓显⽰的刻度值
+        ax.set_rlim(90, 0)
+        #     SATAZ：卫星的⽅位⾓, SATEL：卫星的⾼度⾓
+        SATAZ = [0, 30, 55, 0, 110, 0]
+        s = list(map(lambda i: int(i) * 2 * np.pi / 360, SATAZ))
+        # 卫星的空天图和极径⽅向正好相反，所以刻度值是⾃⼰画的
+        SATEL = [0, 15, 30, 45, 60, 75]
+        SATID = ['90', '75', '60', '45', '30', '15']
+        b1 = [44, 56, 78, 23, 55, 23]
+        b2 = [60, 130, 255, 340, 110, 40]
+        c = ax.scatter(s, SATEL, marker=".", s=450, c='#4EEE94', alpha=0.75,
+                       label='GPS')  # ⽤来画散点图，marker-->控制点的形状， alpha-->控制透明度（0-1）
+        d = ax.scatter(b2, b1, marker=".", s=450, c='#6A5ACD', alpha=0.75, label='BDS')
 
-        self.ax.set_xlim(0, len(data))
-        self.ax.set_ylim(min(data), max(data))
-        self.canvas.draw()
+        for i in range(0, 6):
+            ax.text(s[i], SATEL[i], SATID[i], ha="center", va="center", fontsize=8)  # 画极径刻度值（⽅法有点low）
+            ax.text(b2[i], b1[i], SATID[i], ha="center", va="center", fontsize=8)
+        ax.set_rticks(range(90, 0, -10))  # 极坐标标签显⽰范围
+        ax.legend(bbox_to_anchor=(1.2, 1.15), frameon=False, fontsize="xx-small")
+        plt.show()
 
 
-if __name__ == "__main__":
-
-    app = QApplication(sys.argv)
-    dsl = DSL()
-    dsl.mainLoop()
-
-    matplotlib_widget = MatplotlibWidget()
-    matplotlib_widget.show()
-
-    dsl.dataChanged.connect(matplotlib_widget.update_plot)
-    sys.exit(app.exec())
+if __name__ == '__main__':
+    app = QApplication([])
+    stats = Mytest()
+    stats.show()
+    app.exec()
