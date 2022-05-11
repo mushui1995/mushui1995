@@ -51,42 +51,47 @@ class Nmea_Tcp(Ui_MainWindow):
                     后续为NMEA数据处理
                     '''
                     if len(msg) > 5:
+
                         msg_list = msg.split(",")
-                        if msg_list[0] == "$GPGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
+                        if msg_list[0] == "$GPGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 2:
                             gpsgsv_len = len(msg_list)
                             if int(msg_list[2]) != gpgsv_num_i:  #
                                 sat_num = int((gpsgsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
-                                    GPGSV_list.append(
-                                        [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
-                                gpgsv_num_i = int(msg_list[2])
-                        elif msg_list[0] == "$GAGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
+                                    if msg_list[j] != '' and "*" not in msg_list[j + 3][:2]:  # 判断内容不为空
+                                        GPGSV_list.append(
+                                            [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
+                                gpgsv_num_i = int(msg_list[2])  # 卫星数量
+                        elif msg_list[0] == "$GAGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 2:
                             gagsv_len = len(msg_list)
                             if int(msg_list[2]) != gagsv_num_i:  #
                                 sat_num = int((gagsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
-                                    GAGSV_list.append(
-                                        [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
+                                    if msg_list[j] != '' and "*" not in msg_list[j + 3][:2]:  # 判断内容不为空
+                                        GAGSV_list.append(
+                                            [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
                                 gagsv_num_i = int(msg_list[2])
-                        elif msg_list[0] == "$GLGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
+                        elif msg_list[0] == "$GLGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 2:
                             glgsv_len = len(msg_list)
                             if int(msg_list[2]) != glgsv_num_i:  #
                                 sat_num = int((glgsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
-                                    GLGSV_list.append(
-                                        [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
+                                    if msg_list[j] != '' and "*" not in msg_list[j + 3][:2]:  # 判断内容不为空
+                                        GLGSV_list.append(
+                                            [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
                                 glgsv_num_i = int(msg_list[2])
-                        elif msg_list[0] == "$BDGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
+                        elif msg_list[0] == "$BDGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 2:
                             bdgsv_len = len(msg_list)
                             if int(msg_list[2]) != bdgsv_num_i:  #
                                 sat_num = int((bdgsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
-                                    BDGSV_list.append(
-                                        [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
+                                    if msg_list[j] != '' and "*" not in msg_list[j + 3][:2]:  # 判断内容不为空
+                                        BDGSV_list.append(
+                                            [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
                                 bdgsv_num_i = int(msg_list[2])
                 if len(GPGSV_list) != 0 or len(GAGSV_list) != 0 or len(GLGSV_list) != 0 or len(BDGSV_list) != 0:
                     gnss_signal = dict(

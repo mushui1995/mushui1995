@@ -18,10 +18,12 @@ class UI_TOOL_UI(GNSS_DRAW):
         self.connect_device.toggled.connect(self.connect_device_toggled_slot)
         self.connect_device.clicked.connect(self.connect_tcp)
         self.tcp_rev_msg_signal.connect(self.rev_msg)
-        self.gnss_view_signal.connect(self.sat_view)
+        self.gnss_view_signal.connect(self.animate)
+        self.gnss_view_signal.connect(self.init_gnss_draw)
         '''
         self.timer = QTimer()
-        self.timer.timeout.connect(Nmea_Tcp.nmea)'''
+        self.timer.timeout.connect(Nmea_Tcp.nmea)
+        '''
 
     def connect_device_toggled_slot(self):
         if not self.connect_device.clicked():
