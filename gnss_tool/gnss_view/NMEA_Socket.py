@@ -5,15 +5,15 @@ import math
 import time
 import threading
 from PySide6.QtCore import QTimer, Signal
-from gnss_tool.UI.ui_mian import Ui_MainWindow
+from gnss_tool.UI.ui_main import Ui_MainWindow
 
 
 class Nmea_Tcp(Ui_MainWindow):
     tcp_rev_msg_signal = Signal(str)
+    gnss_view_signal = Signal(dict)
 
     def __init__(self):
         super().__init__()
-        # Ui_MainWindow.__init__(self)
 
     def tcp_client_start(self, ip: str, port: int):
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -52,37 +52,37 @@ class Nmea_Tcp(Ui_MainWindow):
                     '''
                     if len(msg) > 5:
                         msg_list = msg.split(",")
-                        if msg_list[0] == "$GPGSV" and len(msg_list) > 7:
+                        if msg_list[0] == "$GPGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
                             gpsgsv_len = len(msg_list)
                             if int(msg_list[2]) != gpgsv_num_i:  #
-                                sat_num = int((gpsgsv_len - 4) / 4)
+                                sat_num = int((gpsgsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
                                     GPGSV_list.append(
                                         [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
                                 gpgsv_num_i = int(msg_list[2])
-                        elif msg_list[0] == "$GAGSV" and len(msg_list) > 7:
+                        elif msg_list[0] == "$GAGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
                             gagsv_len = len(msg_list)
                             if int(msg_list[2]) != gagsv_num_i:  #
-                                sat_num = int((gagsv_len - 4) / 4)
+                                sat_num = int((gagsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
                                     GAGSV_list.append(
                                         [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
                                 gagsv_num_i = int(msg_list[2])
-                        elif msg_list[0] == "$GLGSV" and len(msg_list) > 7:
+                        elif msg_list[0] == "$GLGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
                             glgsv_len = len(msg_list)
                             if int(msg_list[2]) != glgsv_num_i:  #
-                                sat_num = int((glgsv_len - 4) / 4)
+                                sat_num = int((glgsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
                                     GLGSV_list.append(
                                         [msg_list[j], msg_list[j + 1], msg_list[j + 2], msg_list[j + 3][:2]])
                                 glgsv_num_i = int(msg_list[2])
-                        elif msg_list[0] == "$BDGSV" and len(msg_list) > 7:
+                        elif msg_list[0] == "$BDGSV" and len(msg_list) > 7 and len(msg_list[-2]) > 4:
                             bdgsv_len = len(msg_list)
                             if int(msg_list[2]) != bdgsv_num_i:  #
-                                sat_num = int((bdgsv_len - 4) / 4)
+                                sat_num = int((bdgsv_len - 5) / 4)
                                 for i in range(0, sat_num):
                                     j = (i + 1) * 4
                                     BDGSV_list.append(
@@ -91,7 +91,7 @@ class Nmea_Tcp(Ui_MainWindow):
                 if len(GPGSV_list) != 0 or len(GAGSV_list) != 0 or len(GLGSV_list) != 0 or len(BDGSV_list) != 0:
                     gnss_signal = dict(
                         zip(["GPS", "GAL", "GLO", "BDS", ], [GPGSV_list, GAGSV_list, GLGSV_list, BDGSV_list]))
-                    print(gnss_signal)
+                    self.gnss_view_signal.emit(gnss_signal)
 
             else:
                 self.s.close()
