@@ -1,19 +1,12 @@
-﻿import time
-from typing import Tuple, Any
+﻿import threading
 
 import numpy as np
 from PySide6.QtWidgets import *
-from PySide6.QtCore import QTimer, Signal
-
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, \
-    NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
 from matplotlib.animation import FuncAnimation
-import matplotlib.pyplot as plt
-import sys
-from gnss_tool.UI.ui_main import Ui_MainWindow
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+
 from NMEA_Socket import Nmea_Tcp
-import threading
 
 
 class GNSS_DRAW(QMainWindow, Nmea_Tcp):
